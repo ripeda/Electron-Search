@@ -12,7 +12,7 @@ class Search:
     Search for Electron-based applications
     """
 
-    def __init__(self, search_path: str | list[str] = None):
+    def __init__(self, search_path: list = None):
         """
         Initialize the ElectronSearch class.
 
