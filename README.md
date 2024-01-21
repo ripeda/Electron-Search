@@ -5,8 +5,7 @@ Framework for finding Electron-based applications on your host.
 Currently supports:
 - Windows
 - macOS
-
-Linux support is planned.
+- Linux
 
 
 ## Usage

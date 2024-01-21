@@ -36,7 +36,7 @@ class Search:
         elif sys.platform == "win32":
             return ["C:\\Program Files", "C:\\Program Files (x86)", f"C:\\Users\\{os.getlogin()}\\AppData\\Local"]
         elif sys.platform == "linux":
-            return ["/usr/share/applications"]
+            return ["/usr/share", "/usr/bin", "/opt"]
         raise NotImplementedError(f"Platform {sys.platform} is not supported.")
 
 
@@ -91,12 +91,27 @@ class Search:
         return apps
 
 
-
     def _linux_search(self, path: str) -> list:
         """
         Search for Electron-based applications on Linux.
         """
-        raise NotImplementedError("Linux search is not implemented.")
+        apps = []
+        for bin in Path(path).glob("**/v8_context_snapshot.bin"):
+            if not bin.is_file():
+                continue
+
+            # Now need to resolve the electron executable
+            for executable in Path(bin).parent.glob("*"):
+                if not executable.is_file():
+                    continue
+                if b"Electron/" not in executable.read_bytes():
+                    continue
+                if b"v8_context_snapshot.bin" not in executable.read_bytes():
+                    continue
+
+                apps.append(str(executable))
+
+        return apps
 
 
     def apps(self) -> list:
