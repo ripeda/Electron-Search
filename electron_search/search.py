@@ -19,6 +19,8 @@ class Search:
         Parameters:
             search_path (str | list[str]): The path(s) to search for Electron-based applications.
         """
+        self._platform = sys.platform
+
         self.search_path = search_path
         if isinstance(self.search_path, str):
             self.search_path = [self.search_path]
@@ -31,26 +33,26 @@ class Search:
         """
         Get the default search path for the current platform.
         """
-        if sys.platform == "darwin":
+        if self._platform  == "darwin":
             return ["/Applications"]
-        elif sys.platform == "win32":
+        if self._platform  == "win32":
             return ["C:\\Program Files", "C:\\Program Files (x86)", f"C:\\Users\\{os.getlogin()}\\AppData\\Local"]
-        elif sys.platform == "linux":
+        if self._platform  == "linux":
             return ["/usr/share", "/usr/bin", "/opt"]
-        raise NotImplementedError(f"Platform {sys.platform} is not supported.")
+        raise NotImplementedError(f"Platform {self._platform } is not supported.")
 
 
     def _search_function(self) -> str:
         """
         Get the search function for the current platform.
         """
-        if sys.platform == "darwin":
+        if self._platform  == "darwin":
             return self._macos_search
-        if sys.platform == "win32":
+        if self._platform  == "win32":
             return self._windows_search
-        if sys.platform == "linux":
+        if self._platform  == "linux":
             return self._linux_search
-        raise NotImplementedError(f"Platform {sys.platform} is not supported.")
+        raise NotImplementedError(f"Platform {self._platform } is not supported.")
 
 
     def _macos_search(self, path: str) -> list:
