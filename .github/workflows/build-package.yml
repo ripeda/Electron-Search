@@ -40,6 +40,9 @@ jobs:
       - name: Install Package
         run: pip3 install dist/*.whl
 
+      - name: Test Package (installed)
+        run: cd /; python3 -c "from electron_search import Search; print(Search().apps)"
+
       - name: Upload Wheel Package
         uses: actions/upload-artifact@v2
         with:

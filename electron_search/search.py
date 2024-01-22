@@ -61,9 +61,12 @@ class Search:
         """
         apps = []
         for app in Path(path).glob("**/*.app"):
-            if not app.is_dir():
+            try:
+                if not app.is_dir():
+                    continue
+            except OSError:
                 continue
-            if not Path(app, "Contents", "Frameworks", "Electron Framework.framework").resolve().exists():
+            if not Path(app, "Contents", "Frameworks", "Electron Framework.framework").exists():
                 continue
             apps.append(str(app))
 
@@ -76,12 +79,18 @@ class Search:
         """
         apps = []
         for bin in Path(path).glob("**/v8_context_snapshot.bin"):
-            if not bin.is_file():
+            try:
+                if not bin.is_file():
+                    continue
+            except OSError:
                 continue
 
             # Now need to resolve the electron executable
             for executable in Path(bin).parent.glob("*.exe"):
-                if not executable.is_file():
+                try:
+                    if not executable.is_file():
+                        continue
+                except OSError:
                     continue
                 if b"Electron/" not in executable.read_bytes():
                     continue
@@ -99,12 +108,18 @@ class Search:
         """
         apps = []
         for bin in Path(path).glob("**/v8_context_snapshot.bin"):
-            if not bin.is_file():
+            try:
+                if not bin.is_file():
+                    continue
+            except OSError:
                 continue
 
             # Now need to resolve the electron executable
             for executable in Path(bin).parent.glob("*"):
-                if not executable.is_file():
+                try:
+                    if not executable.is_file():
+                        continue
+                except OSError:
                     continue
                 if b"Electron/" not in executable.read_bytes():
                     continue
@@ -115,7 +130,7 @@ class Search:
 
         return apps
 
-
+    @property
     def apps(self) -> list:
         """
         Search for Electron-based applications.
