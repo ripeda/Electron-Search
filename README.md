@@ -7,7 +7,7 @@ Currently supports:
 - macOS
 - Linux
 
-Additionally supports searching for [`nwjs`-based applications](https://nwjs.io), a pseudo-predecessor to Electron.
+Additionally supports searching for [`nwjs`-based applications](https://nwjs.io), a pseudo-predecessor/alternative to Electron.
 
 ## Installation
 
