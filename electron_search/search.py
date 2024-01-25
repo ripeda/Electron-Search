@@ -4,6 +4,7 @@ search.py: Search for Electron-based applications
 
 import os
 import sys
+
 from pathlib import Path
 
 
@@ -12,21 +13,27 @@ class Search:
     Search for Electron-based applications
     """
 
-    def __init__(self, search_path: list = None):
+    def __init__(self, search_paths: list = None, platform: str = sys.platform, variant = "electron"):
         """
         Initialize the ElectronSearch class.
 
         Parameters:
             search_path (str | list[str]): The path(s) to search for Electron-based applications.
+            platform (str): The platform to search for Electron-based applications on. Defaults to sys.platform.
+            variant (str): The Electron-based application variant to search for. Defaults to "electron", supports "nwjs".
         """
-        self._platform = sys.platform
+        self._variant  = variant
+        self._platform = platform
 
-        self.search_path = search_path
-        if isinstance(self.search_path, str):
-            self.search_path = [self.search_path]
+        self._frameworks = self._search_frameworks(variant=self._variant)
+        self._strings    = self._search_strings(variant=self._variant)
 
-        if self.search_path is None:
-            self.search_path = self._default_search_path()
+        self.search_paths = search_paths
+        if isinstance(self.search_paths, str):
+            self.search_paths = [self.search_paths]
+
+        if self.search_paths is None:
+            self.search_paths = self._default_search_path()
 
 
     def _default_search_path(self) -> list:
@@ -55,6 +62,34 @@ class Search:
         raise NotImplementedError(f"Platform {self._platform } is not supported.")
 
 
+    def _search_strings(self, variant: str = "electron") -> list:
+        """
+        Get the search strings executable type
+        """
+        if variant == "electron":
+            return [b"Electron/", b"v8_context_snapshot.bin"]
+        if variant == "nwjs":
+            if self._platform == "win32":
+                return [b"nw.exe", b"nw_elf.dll"]
+            if self._platform == "linux":
+                return [b".js.map", b"libnw.so"]
+            if self._platform == "darwin":
+                return [] # String search not used for detection on macOS
+        raise NotImplementedError(f"Variant {variant} is not supported.")
+
+
+    def _search_frameworks(self, variant: str = "electron") -> str:
+        """
+        Get the search framework for macOS
+        """
+        if variant == "electron":
+            return ["Electron Framework.framework"]
+        if variant == "nwjs":
+            # https://github.com/nwjs/nw.js/commit/8d45cf4ec8ba56caf70ce7222f491ae431936c4f
+            return ["nwjs Framework.framework", "node-webkit Framework.framework"]
+        raise NotImplementedError(f"Variant {variant} is not supported.")
+
+
     def _macos_search(self, path: str) -> list:
         """
         Search for Electron-based applications on macOS.
@@ -66,9 +101,10 @@ class Search:
                     continue
             except OSError:
                 continue
-            if not Path(app, "Contents", "Frameworks", "Electron Framework.framework").exists():
-                continue
-            apps.append(str(app))
+            for framework in self._frameworks:
+                if Path(app, "Contents", "Frameworks", framework).exists():
+                    apps.append(str(app))
+                    break
 
         return apps
 
@@ -92,10 +128,10 @@ class Search:
                         continue
                 except OSError:
                     continue
-                if b"Electron/" not in executable.read_bytes():
-                    continue
-                if b"v8_context_snapshot.bin" not in executable.read_bytes():
-                    continue
+                bytes = executable.read_bytes()
+                for string in self._strings:
+                    if string not in bytes:
+                        continue
 
                 apps.append(str(executable))
 
@@ -121,14 +157,16 @@ class Search:
                         continue
                 except OSError:
                     continue
-                if b"Electron/" not in executable.read_bytes():
-                    continue
-                if b"v8_context_snapshot.bin" not in executable.read_bytes():
-                    continue
+
+                bytes = executable.read_bytes()
+                for string in self._strings:
+                    if string not in bytes:
+                        continue
 
                 apps.append(str(executable))
 
         return apps
+
 
     @property
     def apps(self) -> list:
@@ -139,7 +177,7 @@ class Search:
             A list of paths to Electron-based applications.
         """
         apps = []
-        for path in self.search_path:
+        for path in self.search_paths:
             apps.extend(self._search_function()(path))
 
         return apps
