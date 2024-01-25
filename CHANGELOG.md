@@ -1,5 +1,7 @@
 # Electron Search
 
+## 1.3.0
+
 ## 1.2.0
 - Add error handling for path permissions
 - Publish `apps()` as property
