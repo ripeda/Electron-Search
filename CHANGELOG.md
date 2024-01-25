@@ -1,6 +1,9 @@
 # Electron Search
 
 ## 1.3.0
+- Iterate over app if provided directly
+  - ex. `search_paths = ["/Applications/MyApp.app"]`
+- Resolve Windows and Linux search regression from 1.2.0
 
 ## 1.2.0
 - Add error handling for path permissions

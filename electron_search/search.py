@@ -95,6 +95,13 @@ class Search:
         Search for Electron-based applications on macOS.
         """
         apps = []
+
+        if path.endswith(".app"):
+            for framework in self._frameworks:
+                if Path(path, "Contents", "Frameworks", framework).exists():
+                    apps.append(path)
+                    break
+
         for app in Path(path).glob("**/*.app"):
             try:
                 if not app.is_dir():
@@ -113,37 +120,34 @@ class Search:
         """
         Search for Electron-based applications on Windows.
         """
-        apps = []
-        for bin in Path(path).glob("**/v8_context_snapshot.bin"):
-            try:
-                if not bin.is_file():
-                    continue
-            except OSError:
-                continue
-
-            # Now need to resolve the electron executable
-            for executable in Path(bin).parent.glob("*.exe"):
-                try:
-                    if not executable.is_file():
-                        continue
-                except OSError:
-                    continue
-                bytes = executable.read_bytes()
-                for string in self._strings:
-                    if string not in bytes:
-                        continue
-
-                apps.append(str(executable))
-
-        return apps
+        return self._generic_search(path, secondary_glob="*.exe")
 
 
     def _linux_search(self, path: str) -> list:
         """
         Search for Electron-based applications on Linux.
         """
+        return self._generic_search(path, secondary_glob="*")
+
+
+    def _generic_search(self, path: str, main_glob: str = "**/v8_context_snapshot.bin", secondary_glob: str = ".exe") -> list:
+        """
+        Search for Electron-based applications based on File structure.
+        """
         apps = []
-        for bin in Path(path).glob("**/v8_context_snapshot.bin"):
+
+        try:
+            if Path(path).is_file():
+                bytes = Path(path).read_bytes()
+                if not all(string in bytes for string in self._strings):
+                    return apps
+
+                apps.append(str(path))
+                return apps
+        except OSError:
+            pass
+
+        for bin in Path(path).glob(main_glob):
             try:
                 if not bin.is_file():
                     continue
@@ -151,7 +155,7 @@ class Search:
                 continue
 
             # Now need to resolve the electron executable
-            for executable in Path(bin).parent.glob("*"):
+            for executable in Path(bin).parent.glob(secondary_glob):
                 try:
                     if not executable.is_file():
                         continue
@@ -159,9 +163,8 @@ class Search:
                     continue
 
                 bytes = executable.read_bytes()
-                for string in self._strings:
-                    if string not in bytes:
-                        continue
+                if not all(string in bytes for string in self._strings):
+                    continue
 
                 apps.append(str(executable))
 
