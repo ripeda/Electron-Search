@@ -27,7 +27,7 @@ python -m pip install electron-search
 
 ### `Search()` Parameters
 
-```py
+```
 search_paths (str | list[str]): The path(s) to search for Electron-based applications.
 platform                 (str): The platform to search for Electron-based applications on. Defaults to sys.platform.
 variant                  (str): The Electron-based application variant to search for. Defaults to "electron", supports "nwjs".
