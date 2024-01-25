@@ -1,5 +1,7 @@
 # Electron Search
 
+## 1.4.0
+
 ## 1.3.0
 - Iterate over app if provided directly
   - ex. `search_paths = ["/Applications/MyApp.app"]`
