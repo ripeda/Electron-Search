@@ -1,6 +1,8 @@
 # Electron Search
 
-## 1.4.0
+## 1.3.1
+- Add PermissionError handling for pathlib's exists()
+  - Thanks @WardsParadox!
 
 ## 1.3.0
 - Iterate over app if provided directly
