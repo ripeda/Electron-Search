@@ -98,9 +98,12 @@ class Search:
 
         if path.endswith(".app"):
             for framework in self._frameworks:
-                if Path(path, "Contents", "Frameworks", framework).exists():
-                    apps.append(path)
-                    break
+                try:
+                    if Path(path, "Contents", "Frameworks", framework).exists():
+                        apps.append(path)
+                        break
+                except PermissionError:
+                    continue
 
         for app in Path(path).glob("**/*.app"):
             try:
@@ -109,9 +112,13 @@ class Search:
             except OSError:
                 continue
             for framework in self._frameworks:
-                if Path(app, "Contents", "Frameworks", framework).exists():
-                    apps.append(str(app))
-                    break
+                # Reference: https://github.com/ripeda/Lectricus/issues/1
+                try:
+                    if Path(app, "Contents", "Frameworks", framework).exists():
+                        apps.append(str(app))
+                        break
+                except PermissionError:
+                    continue
 
         return apps
 
